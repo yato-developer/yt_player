@@ -1,41 +1,41 @@
+//LIBRARY_PATH="/opt/homebrew/lib" DYLD_LIBRARY_PATH="/opt/homebrew/lib" cargo run
+//cargo run --release
+
 use std::error::Error;
 use yt_player::player::Player;
 use yt_player::youtube_client::YoutubeClient;
+use std::io;
+
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let yt_client = YoutubeClient::new();
     let mut player = Player::new()?;
 
+
+    let result = yt_client.search_youtube().await?;
+    player.play(&result, &result).unwrap();
+
     loop {
-        println!("\n検索キーワードを入力してください（終了するには 'q' を入力）: ");
-        let mut query = String::new();
-        std::io::stdin().read_line(&mut query)?;
-        let query = query.trim();
-
-        if query == "q" {
-            break;
-        }
-
-        let result = yt_client.search_youtube(query).await?;
-
-        for (index, item) in result.iter().enumerate() {
-            println!("{}. {}", index + 1, item.name);
-        }
-
-        println!("選択してください（番号を入力）: ");
         let mut input = String::new();
-        std::io::stdin().read_line(&mut input)?;
-        let choice: usize = input.trim().parse()?;
+        println!("Enter command (1:Play/Pause Toggle/2:Search):");
+        io::stdin()
+            .read_line(&mut input)
+            .expect("");
 
-        if choice > 0 && choice <= result.len() {
-            let selected_item = &result[choice - 1];
-            println!("選択された動画: {}", selected_item.name);
-            player.play(&selected_item.name, &selected_item.id)?;
-        } else {
-            println!("無効な選択です");
-        }
+        match input.trim() {
+            "1" => {
+                player.play_pause().unwrap();
+            },
+            "2" => {
+                if let Ok(result) = yt_client.search_youtube().await {
+                    player.play(&result, &result).unwrap();
+                }
+            },
+            _ => {
+                println!("無効なコマンドです");
+                continue;
+            }
+        };
     }
-
-    Ok(())
 }

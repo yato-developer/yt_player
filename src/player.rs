@@ -3,6 +3,8 @@ use std::{f32::MANTISSA_DIGITS, sync::Arc};
 use serde::{Deserialize, Serialize};
 use std::fs::File;
 use std::io::{Read, Write};
+use std::fs::{create_dir_all};
+
 pub struct Player {
     /// An instance of the MPV player wrapped in an `Arc` for thread safety.
     pub player: Arc<Mpv>,
@@ -43,13 +45,14 @@ pub struct MusicList {
 }
 
 
-
 impl Player {
     /// Creates a new `Player` instance and configures MPV settings for optimized audio playback.
     pub fn new() -> Result<Self, MpvError> {
         let mpv = Mpv::new()?;
 
         mpv.set_property("video", "no")?;
+
+
         mpv.set_property("ytdl-raw-options", "no-check-certificate=")?;
         mpv.set_property("loop", "inf")?; // Looping enabled (to be removed with autoplay)
         mpv.set_property(
@@ -78,7 +81,6 @@ impl Player {
     }
 
     pub fn current_play(&mut self, title: &str, url: &str) {
-        println!("Now Playing: {}", title);
         self.current_song = Some(Song {
             title: title.to_string(),
             url: url.to_string(),
@@ -86,14 +88,12 @@ impl Player {
     }
 
     /// Loads and plays a media file from a given URL.
-    pub fn play(&mut self,title : &str, id: &str, ) -> Result<(), MpvError> {
+    pub fn play(&mut self,title : &str, url: &str, ) -> Result<(), MpvError> {
          if let Ok(true) = self.player.get_property("pause") {
             self.unpause()?;
-        } // Quick fix will improve
-
-        let url = format!("https://www.youtube.com/watch?v={}", id);
-        self.player.command("loadfile", &[&url])?; // Replace the current playback
-        self.current_play(title, &url);
+        } // Quick fix will improve 
+        self.player.command("loadfile", &[url])?; // Replace the current playback
+        self.current_play(title, url);
         Ok(())
     }
 
