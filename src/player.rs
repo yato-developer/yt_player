@@ -51,7 +51,7 @@ impl Player {
         let mpv = Mpv::new()?;
 
         mpv.set_property("video", "no")?;
-
+        mpv.set_property("loop", "no")?;
 
         mpv.set_property("ytdl-raw-options", "no-check-certificate=")?;
         mpv.set_property("loop", "inf")?; // Looping enabled (to be removed with autoplay)

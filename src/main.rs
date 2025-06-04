@@ -1,5 +1,6 @@
 //LIBRARY_PATH="/opt/homebrew/lib" DYLD_LIBRARY_PATH="/opt/homebrew/lib" cargo run
 //cargo run --release
+// ./target/release/yt_player
 
 use std::error::Error;
 use yt_player::player::Player;
@@ -18,7 +19,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
 
     loop {
         let mut input = String::new();
-        println!("Enter command (1:Play/Pause Toggle/2:Search):");
+        println!("Enter command (1:Play/Pause / 2:Search / 3:Exit):");
         io::stdin()
             .read_line(&mut input)
             .expect("");
@@ -31,6 +32,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 if let Ok(result) = yt_client.search_youtube().await {
                     player.play(&result, &result).unwrap();
                 }
+            },
+            "3" => {
+                println!("Exiting...");
+                return Ok(());
             },
             _ => {
                 println!("無効なコマンドです");

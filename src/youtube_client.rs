@@ -35,7 +35,7 @@ impl YoutubeClient {
               let items = result.items.items;
 
               for (index, item) in items.iter().enumerate() {
-                println!("{}. {}", index + 1, item.name);
+                println!("{} {}", index + 1, item.name);
               }
 
               println!("Please select (enter number): ");
