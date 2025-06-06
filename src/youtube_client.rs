@@ -22,7 +22,7 @@ impl YoutubeClient {
         YoutubeClient { client }
     }
 
-    pub async fn search_youtube(&self) -> Result<String, String> {
+    pub async fn search_youtube(&self) -> Result< String, String> {
 
         println!("Please enter search keywords");
         let mut query = String::new();
@@ -32,26 +32,38 @@ impl YoutubeClient {
         // 型を明示する（VideoItem を取得したいので）
         match self.client.search::<VideoItem, _>(query).await {
             Ok(result) => {
-              let items = result.items.items;
-
-              for (index, item) in items.iter().enumerate() {
-                println!("{} {}", index + 1, item.name);
-              }
-
-              println!("Please select (enter number): ");
-              let mut input = String::new();
-              std::io::stdin().read_line(&mut input).unwrap();
-              let choice: usize = input.trim().parse().unwrap();
-
-              let url = self.fetch_song_url(&items[choice - 1].id).await.unwrap();
-
-            Ok(url)
+               let url = self.select_url(result.items.items).await;
+                Ok(url)
             }
             Err(err) => {
                 eprintln!("Error: {:?}", err);
                 Err("Error in Search Result".to_string())
             }
         }
+    }
+
+    pub async fn select_url(&self ,items: Vec<VideoItem>) -> String{
+        for (index, item) in items.iter().enumerate() {
+            println!("{} {}", index + 1, item.name);
+          }
+        println!("\n");
+        println!("Please select (enter number): ");
+
+        loop{
+            let mut input = String::new();
+            std::io::stdin().read_line(&mut input).unwrap();
+
+            match input.trim().parse::<usize>(){
+                Ok(choice) => {
+                    let url =   self.fetch_song_url(&items[choice - 1].id).await.unwrap();
+                    return url;
+                }
+                Err(_) => {
+                    println!("数字を入力してください")
+                }
+            }
+        }  
+         
     }
 
     pub async fn fetch_song_url(&self, id: &str) -> Result<String, String> {
